@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "473568439564",
+    "project_id": "parkito-backend-flutter",
+    "storage_bucket": "parkito-backend-flutter.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:473568439564:android:aed9001cdb8ad93acf2d29",
+        "android_client_info": {
+          "package_name": "com.example.parkito_backend_flutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC3XMOLskPW29bRwWYpSYzv_z1z1yyMWDU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
