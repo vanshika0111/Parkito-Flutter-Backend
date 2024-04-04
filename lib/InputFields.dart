@@ -192,7 +192,13 @@ class _InputFieldsState extends State<InputFields> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => BookConfirm(),
+                        builder: (context) => BookConfirm(
+                          parkingArea: parkingAreaController.text,
+                          startDate: startDateController.text,
+                          startTime: startTimeController.text,
+                          endDate: endDateController.text,
+                          endTime: endTimeController.text,
+                        ),
                       ),
                     );
                   } else {
