@@ -1,10 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class SlotAllot extends StatefulWidget {
   final String documentId;
+  final String startDate;
+  final String startTime;
+  final String endDate;
+  final String endTime;
 
-  SlotAllot({required this.documentId});
+  SlotAllot({
+    required this.documentId,
+    required this.startDate,
+    required this.startTime,
+    required this.endDate,
+    required this.endTime
+  });
 
   @override
   _SlotAllotState createState() => _SlotAllotState();
@@ -15,6 +26,7 @@ class _SlotAllotState extends State<SlotAllot> {
   List<int> vacantSlots = [];
   List<int> occupiedSlots = [];
   int? bookedSlot;
+  double? amountToPay;
 
   @override
   void initState() {
@@ -62,7 +74,15 @@ class _SlotAllotState extends State<SlotAllot> {
               .update(slotData);
           setState(() {});
         }
-        addBookedSlotToFirestore(bookedSlot!);
+        setState(() {
+          this.amountToPay = calculateCost(
+            widget.startDate,
+            widget.startTime,
+            widget.endDate,
+            widget.endTime,
+          );
+        });
+        addBookedSlotToFirestore(bookedSlot!, amountToPay ?? 0.0);
         print('Vacant Slots after booking: $vacantSlots');
         print('Occupied Slots after booking: $occupiedSlots');
         setState(() {});
@@ -74,10 +94,35 @@ class _SlotAllotState extends State<SlotAllot> {
     }
   }
 
-  void addBookedSlotToFirestore(int bookedSlot) async {
+  double calculateCost(
+      String startDate,
+      String startTime,
+      String endDate,
+      String endTime,
+      ) {
+    DateFormat dateFormat = DateFormat('dd-MM-yyyy HH:mm:ss');
+
+    // Parse date strings into DateTime objects
+    DateTime startDateTime = dateFormat.parse('$startDate $startTime');
+    DateTime endDateTime = dateFormat.parse('$endDate $endTime');
+
+    print('Start Time for cost: ${dateFormat.format(startDateTime)}');
+    print('End Time cost: ${dateFormat.format(endDateTime)}');
+
+    final duration = endDateTime.difference(startDateTime);
+    final minutes = duration.inMinutes;
+    final costPerMinute = 0.1; // Cost per minute
+
+    double amountToPay = minutes * costPerMinute;
+    print('Cost: ${amountToPay}');
+    return amountToPay;
+  }
+
+  void addBookedSlotToFirestore(int bookedSlot, double amountToPay) async {
     try {
       await firestore.collection('bookedData').doc(widget.documentId).update({
         'bookedSlot': bookedSlot,
+        'amountToPay' : amountToPay,
       });
       print('Booked slot added to Firestore');
     } catch (error) {
@@ -150,6 +195,18 @@ class _SlotAllotState extends State<SlotAllot> {
               this.bookedSlot != null
                   ? this.bookedSlot.toString()
                   : 'No slot booked',
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Amount to Pay:', // Display the amount to pay
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(
+              amountToPay != null
+                  ? 'Rs. ${amountToPay!.toStringAsFixed(2)}' // Display the amount to pay formatted with 2 decimal places
+                  : 'Amount not calculated',
               style: TextStyle(fontSize: 16),
             ),
             SizedBox(height: 20),
