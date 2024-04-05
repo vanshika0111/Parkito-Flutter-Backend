@@ -197,9 +197,7 @@ class _SlotAllotState extends State<SlotAllot> {
             ),
             SizedBox(height: 8),
             Text(
-              this.bookedSlot != null
-                  ? this.bookedSlot.toString()
-                  : 'No slot booked',
+              isCancelled ? 'Booking Cancelled' : (this.bookedSlot != null ? this.bookedSlot.toString() : 'No slot booked'),
               style: TextStyle(fontSize: 16),
             ),
             SizedBox(height: 20),
@@ -228,7 +226,7 @@ class _SlotAllotState extends State<SlotAllot> {
               SizedBox(height: 8),
               Text(
                 refundAmount != null
-                    ? 'Rs. ${refundAmount!.toStringAsFixed(2)}' 
+                    ? 'Rs. ${refundAmount!.toStringAsFixed(2)}'
                     : 'Amount not calculated',
                 style: TextStyle(fontSize: 16),
               ),
