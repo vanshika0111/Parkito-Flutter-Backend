@@ -51,7 +51,13 @@ class _BookConfirmState extends State<BookConfirm> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => SlotAllot(documentId: documentReference.id),
+          builder: (context) => SlotAllot(
+              documentId: documentReference.id,
+              //startTime: widget.startTime,
+              //startDate: widget.startDate,
+              //endTime: widget.endTime,
+              //endDate: widget.endDate,
+              ),
         ),
       );
     } catch (error) {

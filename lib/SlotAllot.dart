@@ -85,6 +85,41 @@ class _SlotAllotState extends State<SlotAllot> {
     }
   }
 
+  void cancelBooking() async {
+    try {
+      // Remove booked slot from Firestore
+      await firestore
+          .collection('bookedData')
+          .doc(widget.documentId)
+          .update({'bookedSlot': 'Cancelled'});
+
+      // Remove booked slot from local state
+      occupiedSlots.remove(bookedSlot);
+      vacantSlots.add(bookedSlot!);
+
+      // Update slot status in Firestore
+      Map<String, dynamic> slotData = {};
+      occupiedSlots.forEach((slot) {
+        slotData[slot.toString()] = '1';
+      });
+      vacantSlots.forEach((slot) {
+        slotData[slot.toString()] = '0';
+      });
+      await firestore
+          .collection('Prototype')
+          .doc('Prototype')
+          .update(slotData);
+
+      setState(() {
+        bookedSlot = null;
+      });
+
+      print('Booking canceled');
+    } catch (error) {
+      print('Error canceling booking: $error');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -117,11 +152,14 @@ class _SlotAllotState extends State<SlotAllot> {
                   : 'No slot booked',
               style: TextStyle(fontSize: 16),
             ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: bookedSlot != null ? cancelBooking : null,
+              child: Text('Cancel Booking'),
+            ),
           ],
         ),
       ),
     );
   }
 }
-
-
