@@ -27,6 +27,9 @@ class _SlotAllotState extends State<SlotAllot> {
   List<int> occupiedSlots = [];
   int? bookedSlot;
   double? amountToPay;
+  bool isCancelled = false;
+  bool refundCalculated = false;
+  double? refundAmount;
 
   @override
   void initState() {
@@ -138,6 +141,15 @@ class _SlotAllotState extends State<SlotAllot> {
           .doc(widget.documentId)
           .update({'bookedSlot': 'Cancelled'});
 
+      // Calculate refund amount (20% deduction)
+      //double refundAmount = amountToPay != null ? amountToPay! * 0.2 : 0.0;
+      double refundAmount = amountToPay != null ? amountToPay! * 0.8 : 0.0; // Calculate refund amount
+
+      await firestore.collection('bookedData').doc(widget.documentId).update({
+        'bookedSlot': 'Cancelled',
+        'refundAmount': refundAmount, // Include refund amount in Firestore update
+      });
+
       // Remove booked slot from local state
       occupiedSlots.remove(bookedSlot);
       vacantSlots.add(bookedSlot!);
@@ -156,10 +168,11 @@ class _SlotAllotState extends State<SlotAllot> {
           .update(slotData);
 
       setState(() {
-        bookedSlot = null;
+        isCancelled = true;
+        refundCalculated = true;
+        this.refundAmount = refundAmount;
       });
-
-      print('Booking canceled');
+      print('Booking canceled. Refund amount: $refundAmount');
     } catch (error) {
       print('Error canceling booking: $error');
     }
@@ -214,6 +227,20 @@ class _SlotAllotState extends State<SlotAllot> {
               onPressed: bookedSlot != null ? cancelBooking : null,
               child: Text('Cancel Booking'),
             ),
+            SizedBox(height: 20),
+            if (isCancelled) ...[
+              Text(
+                'Refund Amount:', // Display the refund amount
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8),
+              Text(
+                refundAmount != null
+                    ? 'Rs. ${refundAmount!.toStringAsFixed(2)}' // Display the refund amount formatted with 2 decimal places
+                    : 'Amount not calculated',
+                style: TextStyle(fontSize: 16),
+              ),
+            ],
           ],
         ),
       ),
