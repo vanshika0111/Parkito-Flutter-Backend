@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart' show Firebase, FirebaseOptions;
-
-import 'firebase_options.dart';
-
 import 'InputFields.dart';
 
 void main() async{

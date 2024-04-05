@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'SlotAllot.dart'; // Import the SlotAllot screen
+import 'SlotAllot.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class BookConfirm extends StatefulWidget {
@@ -27,17 +27,14 @@ class _BookConfirmState extends State<BookConfirm> {
 
   @override
   void dispose() {
-    // Clean up the controller when the widget is disposed.
     vehicleNumberController.dispose();
     super.dispose();
   }
 
   void _saveDataAndNavigate() async {
-    // Get vehicle number from the text field
     String vehicleNumber = vehicleNumberController.text;
 
     try {
-      // Save data to Firestore collection 'bookedData' and get the document ID
       DocumentReference documentReference = await firestore.collection('bookedData').add({
         'parkingArea': widget.parkingArea,
         'startDate': widget.startDate,
@@ -47,7 +44,6 @@ class _BookConfirmState extends State<BookConfirm> {
         'vehicleNumber': vehicleNumber,
       });
 
-      // Navigate to the SlotAllot screen and pass the document ID as an argument
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -62,7 +58,6 @@ class _BookConfirmState extends State<BookConfirm> {
       );
     } catch (error) {
       print('Error saving data: $error');
-      // Handle error here
     }
   }
 
@@ -96,15 +91,13 @@ class _BookConfirmState extends State<BookConfirm> {
           ),
           SizedBox(height: 20.0),
           ElevatedButton(
-            onPressed: _saveDataAndNavigate, // Call function to save data and navigate
+            onPressed: _saveDataAndNavigate,
             child: Text('Yes'),
           ),
           SizedBox(height: 10.0),
           ElevatedButton(
             onPressed: () {
-              // Handle 'No' button press
-              // Navigate back to the previous screen
-              Navigator.pop(context);
+              Navigator.pop(context);  // Navigate back to the previous screen
             },
             child: Text('No'),
           ),

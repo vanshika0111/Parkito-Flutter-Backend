@@ -39,17 +39,12 @@ class _SlotAllotState extends State<SlotAllot> {
 
   void fetchSlotData() async {
     try {
-      // Retrieve the "Prototype" document
-      DocumentSnapshot prototypeSnapshot =
-      await firestore.collection('Prototype').doc('Prototype').get();
+      DocumentSnapshot prototypeSnapshot = await firestore.collection('Prototype').doc('Prototype').get();
 
       if (prototypeSnapshot.exists) {
-        // Extract slot data from the document
-        Map<String, dynamic> slotData =
-        prototypeSnapshot.data() as Map<String, dynamic>;
+        Map<String, dynamic> slotData = prototypeSnapshot.data() as Map<String, dynamic>;
         print('Slots Data: $slotData');
 
-        // Iterate over entries of the map to identify vacant and occupied slots
         slotData.entries.forEach((entry) {
           int slotNumber = int.parse(entry.key);
           dynamic slotStatus = entry.value;
@@ -63,7 +58,6 @@ class _SlotAllotState extends State<SlotAllot> {
         print('Vacant Slots before booking: $vacantSlots');
         print('Occupied Slots before booking: $occupiedSlots');
 
-        // Book the first available slot for the user
         if (vacantSlots.isNotEmpty) {
           bookedSlot = vacantSlots.first;
           vacantSlots.remove(bookedSlot);
@@ -114,7 +108,7 @@ class _SlotAllotState extends State<SlotAllot> {
 
     final duration = endDateTime.difference(startDateTime);
     final minutes = duration.inMinutes;
-    final costPerMinute = 0.1; // Cost per minute
+    final costPerMinute = 0.1;
 
     double amountToPay = minutes * costPerMinute;
     print('Cost: ${amountToPay}');
@@ -135,26 +129,24 @@ class _SlotAllotState extends State<SlotAllot> {
 
   void cancelBooking() async {
     try {
-      // Remove booked slot from Firestore
       await firestore
           .collection('bookedData')
           .doc(widget.documentId)
           .update({'bookedSlot': 'Cancelled'});
 
       // Calculate refund amount (20% deduction)
+      //For example: if amountToPay is 10 Rs. then refund amount to the user will be 8 Rs.
       //double refundAmount = amountToPay != null ? amountToPay! * 0.2 : 0.0;
       double refundAmount = amountToPay != null ? amountToPay! * 0.8 : 0.0; // Calculate refund amount
 
       await firestore.collection('bookedData').doc(widget.documentId).update({
         'bookedSlot': 'Cancelled',
-        'refundAmount': refundAmount, // Include refund amount in Firestore update
+        'refundAmount': refundAmount,
       });
 
-      // Remove booked slot from local state
       occupiedSlots.remove(bookedSlot);
       vacantSlots.add(bookedSlot!);
 
-      // Update slot status in Firestore
       Map<String, dynamic> slotData = {};
       occupiedSlots.forEach((slot) {
         slotData[slot.toString()] = '1';
@@ -200,7 +192,7 @@ class _SlotAllotState extends State<SlotAllot> {
             ),
             SizedBox(height: 20),
             Text(
-              'Booked Slot:', // Display the booked slot number
+              'Booked Slot:',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8),
@@ -212,13 +204,13 @@ class _SlotAllotState extends State<SlotAllot> {
             ),
             SizedBox(height: 20),
             Text(
-              'Amount to Pay:', // Display the amount to pay
+              'Amount to Pay:',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8),
             Text(
               amountToPay != null
-                  ? 'Rs. ${amountToPay!.toStringAsFixed(2)}' // Display the amount to pay formatted with 2 decimal places
+                  ? 'Rs. ${amountToPay!.toStringAsFixed(2)}'
                   : 'Amount not calculated',
               style: TextStyle(fontSize: 16),
             ),
@@ -230,13 +222,13 @@ class _SlotAllotState extends State<SlotAllot> {
             SizedBox(height: 20),
             if (isCancelled) ...[
               Text(
-                'Refund Amount:', // Display the refund amount
+                'Refund Amount:',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 8),
               Text(
                 refundAmount != null
-                    ? 'Rs. ${refundAmount!.toStringAsFixed(2)}' // Display the refund amount formatted with 2 decimal places
+                    ? 'Rs. ${refundAmount!.toStringAsFixed(2)}' 
                     : 'Amount not calculated',
                 style: TextStyle(fontSize: 16),
               ),

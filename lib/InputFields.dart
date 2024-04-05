@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:parkito_backend_flutter/BookConfirm.dart';
-import 'BookConfirm.dart';
 
 class InputFields extends StatefulWidget {
   @override
@@ -24,7 +23,6 @@ class _InputFieldsState extends State<InputFields> {
   @override
   void initState() {
     super.initState();
-    // Listen for changes in the input fields
     startDateController.addListener(checkSubmitButton);
     startTimeController.addListener(checkSubmitButton);
     endDateController.addListener(checkSubmitButton);
@@ -33,7 +31,6 @@ class _InputFieldsState extends State<InputFields> {
 
   @override
   void dispose() {
-    // Dispose text editing controllers
     parkingAreaController.dispose();
     startDateController.dispose();
     startTimeController.dispose();
@@ -42,7 +39,6 @@ class _InputFieldsState extends State<InputFields> {
     super.dispose();
   }
 
-  // Function to check if the submit button should be enabled
   void checkSubmitButton() {
     setState(() {
       isSubmitEnabled = startDateController.text.isNotEmpty &&
@@ -55,7 +51,6 @@ class _InputFieldsState extends State<InputFields> {
     });
   }
 
-  // Function to fetch data from Firestore and check parking slot availability
   Future<bool> checkParkingSlotAvailability() async {
     String startDate = startDateController.text;
     String startTime = startTimeController.text;
@@ -63,19 +58,14 @@ class _InputFieldsState extends State<InputFields> {
     String endTime = endTimeController.text;
 
     try {
-      // Fetch data from Firestore collection 'Prototype'
-      DocumentSnapshot prototypeSnapshot =
-      await firestore.collection('Prototype').doc('Prototype').get();
+      DocumentSnapshot prototypeSnapshot = await firestore.collection('Prototype').doc('Prototype').get();
 
       if (prototypeSnapshot.exists) {
         if (prototypeSnapshot.data() is Map<String, dynamic>) {
-          // Extract slot data from Firestore document
-          Map<String, dynamic> slotsData =
-          prototypeSnapshot.data() as Map<String, dynamic>; // Assuming slotsData is a map
+          Map<String, dynamic> slotsData = prototypeSnapshot.data() as Map<String, dynamic>; // Assuming slotsData is a map
           print('Slots Data: $slotsData');
 
-          bool isSlotAvailable = checkSlotAvailability(
-              startDate, startTime, endDate, endTime, slotsData);
+          bool isSlotAvailable = checkSlotAvailability(startDate, startTime, endDate, endTime, slotsData);
           if (isSlotAvailable) {
             print('Slot is available for the specified time.');
             return true;
@@ -105,9 +95,8 @@ class _InputFieldsState extends State<InputFields> {
     }
   }
 
-  bool checkSlotAvailability(String startDate, String startTime,
-      String endDate, String endTime, Map<String, dynamic> slotsData) {
-    // Define date format
+  bool checkSlotAvailability(String startDate, String startTime, String endDate, String endTime, Map<String, dynamic> slotsData) {
+
     DateFormat dateFormat = DateFormat('dd-MM-yyyy HH:mm:ss');
 
     // Parse date strings into DateTime objects
@@ -117,16 +106,13 @@ class _InputFieldsState extends State<InputFields> {
     print('Start Time fetched: ${dateFormat.format(startDateTime)}');
     print('End Time fetched: ${dateFormat.format(endDateTime)}');
 
-    // Adjust start and end times for availability check
     DateTime startCheckTime = startDateTime.subtract(Duration(minutes: 15));
     DateTime endCheckTime = endDateTime.add(Duration(minutes: 30));
 
     print('Start Time calculated: ${dateFormat.format(startCheckTime)}');
     print('End Time calculated: ${dateFormat.format(endCheckTime)}');
 
-    // Perform availability check
-    List<int> intArray =
-    slotsData.values.map((value) => int.parse(value.toString())).toList();
+    List<int> intArray = slotsData.values.map((value) => int.parse(value.toString())).toList();
     int total = slotsData.length;
     int a = 0;
     for (int i = 0; i < total; i++) {
