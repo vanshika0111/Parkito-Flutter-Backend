@@ -131,29 +131,18 @@ class _SlotAllotState extends State<SlotAllot> {
 
   void cancelBooking() async {
     try {
-      // Retrieve the booked slot details from Firestore
       DocumentSnapshot bookedSlotSnapshot = await firestore.collection('bookedData').doc(widget.documentId).get();
-
       if (bookedSlotSnapshot.exists) {
-        // Retrieve booked slot data
         Map<String, dynamic> bookedSlotData = bookedSlotSnapshot.data() as Map<String, dynamic>;
 
-        // Calculate refund amount (20% deduction)
-        double refundAmount = amountToPay != null ? amountToPay! * 0.2 : 0.0;
-
-        // Add refund amount to booked slot data
+        double refundAmount = amountToPay != null ? amountToPay! * 0.8 : 0.0;
         bookedSlotData['refundAmount'] = refundAmount;
-        // Add booked slot data to the Cancellation collection
-        await firestore.collection('Cancellation').doc(widget.documentId).set(bookedSlotData);
 
-        // Delete the booked slot from the bookedData collection
+        await firestore.collection('Cancellation').doc(widget.documentId).set(bookedSlotData);
         await firestore.collection('bookedData').doc(widget.documentId).delete();
 
-        // Remove booked slot from local state
         occupiedSlots.remove(bookedSlot);
         vacantSlots.add(bookedSlot!);
-
-        // Update slot status in Firestore
         Map<String, dynamic> slotData = {};
         occupiedSlots.forEach((slot) {
           slotData[slot.toString()] = '1';
@@ -166,7 +155,7 @@ class _SlotAllotState extends State<SlotAllot> {
         setState(() {
           isCancelled = true;
           if (!refundCalculated) {
-            refundAmount = amountToPay! * 0.8; // 20% deduction
+            refundAmount = amountToPay! * 0.8;
             refundCalculated = true;
           }
           this.refundAmount = refundAmount;
