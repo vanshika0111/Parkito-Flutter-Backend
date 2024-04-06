@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 class SlotAllot extends StatefulWidget {
   final String documentId;
+  final String parkingArea;
   final String startDate;
   final String startTime;
   final String endDate;
@@ -11,6 +12,7 @@ class SlotAllot extends StatefulWidget {
 
   SlotAllot({
     required this.documentId,
+    required this.parkingArea,
     required this.startDate,
     required this.startTime,
     required this.endDate,
@@ -129,42 +131,51 @@ class _SlotAllotState extends State<SlotAllot> {
 
   void cancelBooking() async {
     try {
-      await firestore
-          .collection('bookedData')
-          .doc(widget.documentId)
-          .update({'bookedSlot': 'Cancelled'});
+      // Retrieve the booked slot details from Firestore
+      DocumentSnapshot bookedSlotSnapshot = await firestore.collection('bookedData').doc(widget.documentId).get();
 
-      // Calculate refund amount (20% deduction)
-      //For example: if amountToPay is 10 Rs. then refund amount to the user will be 8 Rs.
-      //double refundAmount = amountToPay != null ? amountToPay! * 0.2 : 0.0;
-      double refundAmount = amountToPay != null ? amountToPay! * 0.8 : 0.0; // Calculate refund amount
+      if (bookedSlotSnapshot.exists) {
+        // Retrieve booked slot data
+        Map<String, dynamic> bookedSlotData = bookedSlotSnapshot.data() as Map<String, dynamic>;
 
-      await firestore.collection('bookedData').doc(widget.documentId).update({
-        'bookedSlot': 'Cancelled',
-        'refundAmount': refundAmount,
-      });
+        // Calculate refund amount (20% deduction)
+        double refundAmount = amountToPay != null ? amountToPay! * 0.2 : 0.0;
 
-      occupiedSlots.remove(bookedSlot);
-      vacantSlots.add(bookedSlot!);
+        // Add refund amount to booked slot data
+        bookedSlotData['refundAmount'] = refundAmount;
+        // Add booked slot data to the Cancellation collection
+        await firestore.collection('Cancellation').doc(widget.documentId).set(bookedSlotData);
 
-      Map<String, dynamic> slotData = {};
-      occupiedSlots.forEach((slot) {
-        slotData[slot.toString()] = '1';
-      });
-      vacantSlots.forEach((slot) {
-        slotData[slot.toString()] = '0';
-      });
-      await firestore
-          .collection('Prototype')
-          .doc('Prototype')
-          .update(slotData);
+        // Delete the booked slot from the bookedData collection
+        await firestore.collection('bookedData').doc(widget.documentId).delete();
 
-      setState(() {
-        isCancelled = true;
-        refundCalculated = true;
-        this.refundAmount = refundAmount;
-      });
-      print('Booking canceled. Refund amount: $refundAmount');
+        // Remove booked slot from local state
+        occupiedSlots.remove(bookedSlot);
+        vacantSlots.add(bookedSlot!);
+
+        // Update slot status in Firestore
+        Map<String, dynamic> slotData = {};
+        occupiedSlots.forEach((slot) {
+          slotData[slot.toString()] = '1';
+        });
+        vacantSlots.forEach((slot) {
+          slotData[slot.toString()] = '0';
+        });
+        await firestore.collection('Prototype').doc('Prototype').update(slotData);
+
+        setState(() {
+          isCancelled = true;
+          if (!refundCalculated) {
+            refundAmount = amountToPay! * 0.8; // 20% deduction
+            refundCalculated = true;
+          }
+          this.refundAmount = refundAmount;
+        });
+
+        print('Booking canceled. Refund amount: $refundAmount');
+      } else {
+        print('Document not found in bookedData collection');
+      }
     } catch (error) {
       print('Error canceling booking: $error');
     }

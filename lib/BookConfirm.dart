@@ -49,6 +49,7 @@ class _BookConfirmState extends State<BookConfirm> {
         MaterialPageRoute(
           builder: (context) => SlotAllot(
               documentId: documentReference.id,
+              parkingArea: widget.parkingArea,
               startDate: widget.startDate,
               startTime: widget.startTime,
               endDate: widget.endDate,
