@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:pretty_qr_code/pretty_qr_code.dart';
+//import 'package:qr_flutter/qr_flutter.dart';
+
 
 class SlotAllot extends StatefulWidget {
   final String documentId;
@@ -32,13 +35,25 @@ class _SlotAllotState extends State<SlotAllot> {
   bool isCancelled = false;
   bool refundCalculated = false;
   double? refundAmount;
+  String? qrCodeData;
+  //late QrImage qrCode;
+  //QrImage qrCode = widget.documentId;
 
   @override
   void initState() {
     super.initState();
     fetchSlotData();
+    //generateQRCode();
   }
-
+/*
+  void generateQRCode() {
+    qrCode = QrImage(
+      data: widget.documentId,
+      //version: QrVersions.auto,
+      //size: 200.0,
+    );
+  }
+*/
   void fetchSlotData() async {
     try {
       DocumentSnapshot prototypeSnapshot = await firestore.collection('Prototype').doc('Prototype').get();
@@ -84,7 +99,14 @@ class _SlotAllotState extends State<SlotAllot> {
         addBookedSlotToFirestore(bookedSlot!, amountToPay ?? 0.0);
         print('Vacant Slots after booking: $vacantSlots');
         print('Occupied Slots after booking: $occupiedSlots');
-        setState(() {});
+        String qrData = 'Document ID: ${widget.documentId}\n'
+            'Start Date: ${widget.startDate}\n'
+            'Start Time: ${widget.startTime}\n'
+            'End Date: ${widget.endDate}\n'
+            'End Time: ${widget.endTime}';
+        setState(() {
+          qrCodeData = qrData;
+        });
       } else {
         print('Prototype document does not exist');
       }
@@ -229,6 +251,17 @@ class _SlotAllotState extends State<SlotAllot> {
                     ? 'Rs. ${refundAmount!.toStringAsFixed(2)}'
                     : 'Amount not calculated',
                 style: TextStyle(fontSize: 16),
+              ),
+            ],
+            SizedBox(height: 20),
+            if (qrCodeData != null) ...[
+              Text(
+                'QR Code:',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8),
+              PrettyQr(
+                data: qrCodeData!,
               ),
             ],
           ],

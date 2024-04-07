@@ -41,7 +41,8 @@ dependencies:
   fluttertoast:
   shared_preferences:
   intl:
-
+  qr_flutter:
+  pretty_qr_code:
 dev_dependencies:
   flutter_test:
     sdk: flutter
